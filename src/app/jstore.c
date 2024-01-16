@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "../lib/memtable.h"
+#include "../lib/storage/skiplist.h"
 
 static char *read_line(FILE *fd) {
 	char *line = NULL;
@@ -18,47 +18,49 @@ static char *read_line(FILE *fd) {
 }
 
 int main() {
-    LinkedList list = list_init();
+	sl_node_t *head = sl_init();
 
-    char *line = NULL;
-    while (true) {
-    	printf("jstore> ");
-	    line = read_line(stdin); // TODO we leak this memory
+	char *line = NULL;
+	while (true) {
+		printf("jstore> ");
+		line = read_line(stdin);
 
-		if (strncmp("store ", line, 6) == 0) {
-			line = &line[6];
-			printf("Arguments '%s'\n", line);
-			// TODO strip whitespace
+		if (strncmp("set ", line, 4) == 0) {
+			char *chunk = &line[4];
 
-			char *space = strchr(line, ' ');
-			if (space == NULL) {
-				// No second argument provided
-				printf("No second argument\n");
-				continue;
-			}
-
+			char *space = strchr(chunk, ' ');
 			*space = '\0';
-			char *first = line;
-			char *second = space + 1;
+			char *key = chunk;
+			char *value = space + 1;
 
-			printf("Input: STORE ('%s', '%s')\n", first, second);
-			entry_t entry = { .key = first, .value = second };
-			list_append(&list, entry);
+			sl_set(head, key, value);
+			printf("SET '%s' => '%s'\n", key, value);
 		} else if (strncmp("get ", line, 4) == 0) {
-			line = &line[4];
+			char *chunk = &line[4];
 
-			char *key = line;
-			printf("Input: GET ('%s')\n", key);
+			char *key = chunk;
 
-			entry_t *result = list_find(&list, key);
-			if (result == NULL) {
-				printf("No data found for key '%s'\n", key);
-			} else {
-				printf("Output: ('%s', '%s') \n", result->key, result->value);
-			}
+			char *value = sl_get(head, key);
+			printf("GET '%s' => '%s'\n", key, value);
+			free(value);
+		} else if (strncmp("unset ", line, 6) == 0) {
+			char *chunk = &line[6];
+
+			char *key = chunk;
+
+			sl_unset(head, key);
+			printf("UNSET '%s'\n", key);
+		} else if (strncmp("exit", line, 4) == 0) {
+			printf("Exiting...\n");
+
+			free(line);
+			break;
 		} else {
-			printf("Line not matched\n");
-			continue;
+			printf("ERROR: Unknown command '%s'\n", line);
 		}
-    }
+
+		free(line);
+	}
+
+	sl_deinit(head);
 }
