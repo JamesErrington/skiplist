@@ -145,3 +145,11 @@ void sl_deinit(sl_node_t *head) {
 		curr = next;
 	}
 }
+
+sl_node_t *sl_next(sl_node_t *curr) {
+	if (curr != NULL) {
+		return curr->link[0];
+	}
+
+	return NULL;
+}

@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../lib/storage/skiplist.h"
+#include "../lib/sst.h"
 
 static char *read_line(FILE *fd) {
 	char *line = NULL;
@@ -61,6 +62,8 @@ int main() {
 
 		free(line);
 	}
+
+	sst_write("./store.sst", head);
 
 	sl_deinit(head);
 }

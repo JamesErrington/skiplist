@@ -22,4 +22,6 @@ void sl_unset(sl_node_t *head, char *key);
 
 void sl_deinit(sl_node_t *head);
 
+sl_node_t *sl_next(sl_node_t *curr);
+
 #endif
